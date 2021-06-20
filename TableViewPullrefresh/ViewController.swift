@@ -9,8 +9,11 @@ import UIKit
 
 class ViewController: UIViewController {
     
-    private let table: UITableView = {
+   var tableData = [String]()
+    
+    let table: UITableView = {
        let table = UITableView()
+        table.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
         
         return table
     }()
@@ -20,6 +23,7 @@ class ViewController: UIViewController {
         table.delegate = self
         table.dataSource = self
         view.addSubview(table)
+        fetchData()
         
     }
     
@@ -32,17 +36,36 @@ class ViewController: UIViewController {
     }
     //
     
-    private func fetchData() {
+        func fetchData() {
         guard let url = URL(string:
-                "https://api.jsonbin.io/b/607db4d70ed6f819beb03020"
-        ) else {
+                "https://api.jsonbin.io/b/607db4d70ed6f819beb03020") else {
             return
         }
         
-        let task = URLSession.shared.dataTask(with: url, completionHandler: { data, _, error in
-            guard let data = data, error == nil else {
+        let task = URLSession.shared.dataTask(with: url, completionHandler: { [weak self] data, _, error in
+            guard let strongSelf = self, let data = data, error == nil else {
                 return
             }
+            
+            var result: APIResponse?
+            do {
+                result = try JSONDecoder().decode(APIResponse.self, from: data)
+            }
+            catch {
+                //handle error
+            }
+            guard let final = result else {
+                return
+            }
+            
+            strongSelf.tableData.append("ID:  \(final.results.id)")
+            strongSelf.tableData.append("Status:  \(final.results.content)")
+            
+            DispatchQueue.main.async {
+                strongSelf.table.reloadData()
+            }
+           
+            
         })
         
         task.resume()
@@ -61,12 +84,12 @@ class ViewController: UIViewController {
 extension ViewController: UITableViewDelegate, UITableViewDataSource {
    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 10
+        return tableData.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        cell.textLabel?.text = "Hello"
+        cell.textLabel?.text = tableData[indexPath.row]
         return cell
     }
     
