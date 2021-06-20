@@ -9,7 +9,10 @@ import UIKit
 
 class ViewController: UIViewController {
     
-   var tableData = [String]()
+    let parser = Parser()
+    var notifications = [Notification]()
+    
+    
     
     let table: UITableView = {
        let table = UITableView()
@@ -24,6 +27,7 @@ class ViewController: UIViewController {
         table.dataSource = self
         view.addSubview(table)
         fetchData()
+       
         
     }
     
@@ -31,67 +35,42 @@ class ViewController: UIViewController {
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         table.frame = view.bounds
-        
-        
     }
-    //
     
-        func fetchData() {
-        guard let url = URL(string:
-                "https://api.jsonbin.io/b/607db4d70ed6f819beb03020") else {
-            return
-        }
-        
-        let task = URLSession.shared.dataTask(with: url, completionHandler: { [weak self] data, _, error in
-            guard let strongSelf = self, let data = data, error == nil else {
-                return
-            }
-            
-            var result: APIResponse?
-            do {
-                result = try JSONDecoder().decode(APIResponse.self, from: data)
-            }
-            catch {
-                //handle error
-            }
-            guard let final = result else {
-                return
-            }
-            
-            strongSelf.tableData.append("ID:  \(final.results.id)")
-            strongSelf.tableData.append("Status:  \(final.results.content)")
-            
+    
+       func fetchData() {
+        parser.parse {
+            data in
+            self.notifications = data
             DispatchQueue.main.async {
-                strongSelf.table.reloadData()
-            }
-           
+                self.table.reloadData()
+                     }
             
-        })
-        
-        task.resume()
         }
-        
-    
+       }
+ 
+
+
+
+
 
 }
-
-
-
-
 
 
 
 extension ViewController: UITableViewDelegate, UITableViewDataSource {
    
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return tableData.count
+        return notifications.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        cell.textLabel?.text = tableData[indexPath.row]
+        cell.textLabel?.text = "ID: " +
+            notifications[indexPath.row].id.appending(" Status: \(notifications[indexPath.row].content)")
         return cell
     }
+    
     
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
@@ -99,3 +78,5 @@ extension ViewController: UITableViewDelegate, UITableViewDataSource {
     
     
 }
+
+
