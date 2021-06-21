@@ -11,7 +11,7 @@ class ViewController: UIViewController {
     
     let parser = Parser()
     var notifications = [Notification]()
-    let sections = ["Não lidas", "Lidas"]
+    let sections = ["Notificações Não lidas", " Notificações Lidas"]
     
     
     
@@ -63,6 +63,7 @@ class ViewController: UIViewController {
     }
  
     func configureTableView(){
+        
         view.addSubview(table)
         setTableViewDelegate()
         table.rowHeight = 100
@@ -85,27 +86,60 @@ class ViewController: UIViewController {
 
 extension ViewController: UITableViewDelegate, UITableViewDataSource {
     
-    func numberOfSections(in tableView: UITableView) -> Int {
-        sections.count
-    }
+    
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         return sections[section]
     }
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return sections.count
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+      
+
+        return notifications.count
+
+
+    }
+    
+    
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        
+        
+        let label = UILabel()
+        label.textAlignment = .center
+        label.text = sections[section]
+        if label.text == sections[0] {
+            label.backgroundColor = .yellow
+        } else {
+            label.backgroundColor = .green
+        }
+        
+        return label
+    }
+    
     
     func tableView(_ tableView: UITableView, heightForHeaderInSection section: Int) -> CGFloat {
         100
     }
    
    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return notifications.count
-    }
+  
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let notification = notifications[indexPath.row]
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        cell.backgroundColor = .systemGray
+        cell.textLabel?.adjustsFontSizeToFitWidth = true
+        cell.textLabel?.numberOfLines = 0
+        
+        var  checkmark = cell.accessoryType = notification.isRead ? .checkmark : .none
         cell.textLabel?.text =
-            "ID: " + notifications[indexPath.row].id.appending(" Status: \(notifications[indexPath.row].content)")
+            "ID: " + notifications[indexPath.row].id.appending(" \nStatus: \(notifications[indexPath.row].content) Section:\(indexPath.section)")
+        
         return cell
     }
     

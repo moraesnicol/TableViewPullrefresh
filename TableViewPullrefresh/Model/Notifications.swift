@@ -14,5 +14,7 @@ struct Root: Codable {
 
 struct Notification:  Codable {
     let id, content: String
-    let isRead: Bool
+    var isRead: Bool
 }
+
+
